@@ -23,7 +23,15 @@ const app = express();
 // =======================================
 
 // ✅ CORS (allow frontend)
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://your-frontend-name.vercel.app"
+    ],
+    credentials: true,
+  })
+);
 
 // ✅ JSON parser
 app.use(express.json());

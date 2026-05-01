@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 
 import Login from "./pages/Login";
@@ -7,31 +14,95 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 
+// ===============================
+// ✅ PROTECTED ROUTE
+// ===============================
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+// ===============================
+// ✅ PUBLIC ROUTE (BLOCK IF LOGGED IN)
+// ===============================
+function PublicRoute({ children }) {
+  const token = localStorage.getItem("token");
+
+  return token ? <Navigate to="/" replace /> : children;
+}
+
+// ===============================
+// ✅ LAYOUT
+// ===============================
 function Layout() {
   const location = useLocation();
 
-  // ❌ Pages where navbar should NOT show
   const hideNavbarRoutes = ["/login", "/register"];
-
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
 
   return (
     <>
-      {/* ✅ CONDITION */}
       {!shouldHideNavbar && <Navbar />}
 
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* 🔓 Public Routes */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
 
+        {/* 🔒 Protected Routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Tasks />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 🔁 Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
         <Route path="/" element={<Dashboard />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/tasks" element={<Tasks />} />
       </Routes>
     </>
   );
 }
 
+// ===============================
+// ✅ APP ROOT
+// ===============================
 export default function App() {
   return (
     <Router>
